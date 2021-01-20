@@ -335,6 +335,7 @@ def get_ip_address_info(ip_address, cache=None, offline=False,
         OrderedDict: ``ip_address``, ``reverse_dns``
 
     """
+    logging.info('get_ip_address_info(): offline=%s' % offline)
     ip_address = ip_address.lower()
     if cache:
         info = cache.get(ip_address, None)
