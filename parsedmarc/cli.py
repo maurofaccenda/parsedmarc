@@ -56,6 +56,7 @@ def init(ctr):
 
 
 def _main():
+    logging.info('i am on the right version?')
     """Called when the module is executed"""
     def process_reports(reports_):
         output_str = "{0}\n".format(json.dumps(reports_,
