@@ -103,7 +103,7 @@ def _main():
                             report, kafka_aggregate_topic)
                 except Exception as error_:
                     logger.error("Kafka Error: {0}".format(
-                         error_.__str__()))
+                        error_.__str__()))
             if opts.hec:
                 try:
                     aggregate_reports_ = reports_["aggregate_reports"]
@@ -613,8 +613,7 @@ def _main():
                 offline=opts.offline,
                 nameservers=ns,
                 test=opts.imap_test,
-                strip_attachment_payloads=sa
-                                                   )
+                strip_attachment_payloads=sa)
 
             aggregate_reports += reports["aggregate_reports"]
             forensic_reports += reports["forensic_reports"]

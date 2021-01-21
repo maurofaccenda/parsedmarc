@@ -2,38 +2,38 @@
 
 """A Python package for parsing DMARC reports"""
 
-import logging
-import os
-import shutil
-import xml.parsers.expat as expat
-import json
-from datetime import datetime
-from collections import OrderedDict
-from io import BytesIO, StringIO
-from gzip import GzipFile
-from socket import timeout
-import zipfile
-from csv import DictWriter
-import re
-from base64 import b64decode
 import binascii
 import email
-import tempfile
 import email.utils
+import json
+import logging
 import mailbox
+import os
+import re
+import shutil
+import tempfile
+import xml.parsers.expat as expat
+import zipfile
+from base64 import b64decode
+from collections import OrderedDict
+from csv import DictWriter
+from datetime import datetime
+from gzip import GzipFile
+from io import BytesIO, StringIO
+from socket import timeout
 
 import mailparser
-from expiringdict import ExpiringDict
 import xmltodict
+from expiringdict import ExpiringDict
+from imapclient.exceptions import IMAPClientError
 from lxml import etree
 from mailsuite.imap import IMAPClient
 from mailsuite.smtp import send_email
-from imapclient.exceptions import IMAPClientError
 
-from parsedmarc.utils import get_base_domain, get_ip_address_info
-from parsedmarc.utils import is_outlook_msg, convert_outlook_msg
-from parsedmarc.utils import timestamp_to_human, human_timestamp_to_datetime
-from parsedmarc.utils import parse_email
+from parsedmarc.imapwrapper import ImapWrapper
+from parsedmarc.utils import (convert_outlook_msg, get_base_domain,
+                              get_ip_address_info, human_timestamp_to_datetime,
+                              is_outlook_msg, parse_email, timestamp_to_human)
 
 __version__ = "6.12.0"
 
@@ -1054,11 +1054,11 @@ def get_dmarc_reports_from_inbox(connection=None,
     if connection:
         server = connection
     else:
-        server = IMAPClient(host, user, password, port=port,
-                            ssl=ssl, verify=verify,
-                            timeout=timeout,
-                            max_retries=max_retries,
-                            initial_folder=reports_folder)
+        server = ImapWrapper(host, user, password, port=port,
+                             ssl=ssl, verify=verify,
+                             timeout=timeout,
+                             max_retries=max_retries,
+                             initial_folder=reports_folder)
 
     server.create_folder(archive_folder)
     server.create_folder(aggregate_reports_folder)
@@ -1105,7 +1105,7 @@ def get_dmarc_reports_from_inbox(connection=None,
     if not test:
         if delete:
             processed_messages = aggregate_report_msg_uids + \
-                                 forensic_report_msg_uids
+                forensic_report_msg_uids
 
             number_of_processed_msgs = len(processed_messages)
             for i in range(number_of_processed_msgs):
@@ -1154,6 +1154,14 @@ def get_dmarc_reports_from_inbox(connection=None,
                         message,
                         i + 1, number_of_forensic_msgs, msg_uid))
                     try:
+                        server.move_messages([msg_uid],
+                                             forensic_reports_folder)
+                    except socket.error as e:
+                        server = ImapWrapper(host, user, password, port=port,
+                                             ssl=ssl, verify=verify,
+                                             timeout=timeout,
+                                             max_retries=max_retries,
+                                             initial_folder=reports_folder)
                         server.move_messages([msg_uid],
                                              forensic_reports_folder)
                     except Exception as e:
@@ -1227,11 +1235,11 @@ def watch_inbox(host, username, password, callback, port=None, ssl=True,
 
     while True:
         try:
-            IMAPClient(host=host, username=username, password=password,
-                       port=port, ssl=ssl, verify=verify,
-                       initial_folder=reports_folder,
-                       idle_callback=idle_callback,
-                       idle_timeout=idle_timeout)
+            ImapWrapper(host=host, username=username, password=password,
+                        port=port, ssl=ssl, verify=verify,
+                        initial_folder=reports_folder,
+                        idle_callback=idle_callback,
+                        idle_timeout=idle_timeout)
         except (timeout, IMAPClientError):
             logger.warning("IMAP connection timeout. Reconnecting...")
 
