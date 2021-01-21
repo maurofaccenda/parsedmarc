@@ -53,6 +53,7 @@ class ImapWrapper:
                                      max_retries=self.max_retries,
                                      initial_folder=self.initial_folder)
     def _test_connection(self):
+        logger.debug('Testing connection...')
         self.client.noop()
 
     def move_messages(self, msg_uids, folder_path, _attempt=1):
