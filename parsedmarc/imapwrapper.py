@@ -37,14 +37,9 @@ class ImapWrapper:
                 self._test_connection()
             except (BrokenPipeError, imaplib.IMAP4.abort) as e:
                 logger.debug('Exception caught (%s) %s', type(e), str(e))
-                logger.debug('Reconnecting...')
-                self.client = IMAPClient(self.host, self.username, self.password,
-                                         port=self.port,
-                                         ssl=self.ssl,
-                                         verify=self.verify,
-                                         timeout=self.timeout,
-                                         max_retries=self.max_retries,
-                                         initial_folder=self.initial_folder)
+                logger.debug('Starting reset_connection()')
+                self.client.reset_connection()
+                logger.debug('Finished reset_connection()')
         else:
             logger.debug('Connecting...')
             self.client = IMAPClient(self.host, self.username, self.password,
