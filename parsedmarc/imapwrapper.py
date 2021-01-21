@@ -34,7 +34,8 @@ class ImapWrapper:
         if self.client:
             try:
                 self._test_connection()
-            except BrokenPipeError:
+            except (BrokenPipeError, socket.error) as e:
+                logger.debug('Exception caught (%s) %s', type(e), str(e))
                 logger.debug('Reconnecting...')
                 self.client = IMAPClient(self.host, self.username, self.password,
                                          port=self.port,
