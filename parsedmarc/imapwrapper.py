@@ -32,6 +32,7 @@ class ImapWrapper:
         self._connect()
 
     def _connect(self):
+        logger.debug(__name__)
         if self.client:
             try:
                 self._test_connection()
@@ -50,37 +51,41 @@ class ImapWrapper:
                                      max_retries=self.max_retries,
                                      initial_folder=self.initial_folder)
     def _test_connection(self):
-        logger.debug('Testing connection...')
+        logger.debug(__name__)
         self.client.noop()
 
     def move_messages(self, msg_uids, folder_path, _attempt=1):
+        logger.debug(__name__)
         self._connect()
         try:
             logger.debug('Starting move_messages()')
-            result = self.client.move_messages(msg_uids, folder_path, _attempt)
+            self.client.move_messages(msg_uids, folder_path, _attempt)
             logger.debug('Finished move_messages()')
-
         except Exception as e:
             logger.debug('Exception caught when moving message: %s' % str(e))
             raise e
-        return result
 
     def create_folder(self, folder_path, _attempt=1):
+        logger.debug(__name__)
         self._connect()
         return self.client.create_folder(folder_path, _attempt)
 
     def search(self, criteria="ALL", charset=None):
+        logger.debug(__name__)
         self._connect()
         return self.client.search(criteria, charset)
 
     def fetch_message(self, msg_uid, parse=False, _attempt=1):
+        logger.debug(__name__)
         self._connect()
         return self.client.fetch_message(msg_uid, parse, _attempt)
 
     def delete_messages(self, messages, silent=False):
+        logger.debug(__name__)
         self._connect()
         return self.client.fetch_message(messages, silent)
 
     def capabilities(self):
+        logger.debug(__name__)
         self._connect()
         return self.client.capabilities()
