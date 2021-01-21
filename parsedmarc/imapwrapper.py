@@ -58,7 +58,12 @@ class ImapWrapper:
 
     def move_messages(self, msg_uids, folder_path, _attempt=1):
         self._connect()
-        return self.client.move_messages(msg_uids, folder_path, _attempt)
+        try:
+            result = self.client.move_messages(msg_uids, folder_path, _attempt)
+        except Exception as e:
+            logger.debug('Exception caught when moving message: %s' % str(e))
+            raise e
+        return result
 
     def create_folder(self, folder_path, _attempt=1):
         self._connect()
