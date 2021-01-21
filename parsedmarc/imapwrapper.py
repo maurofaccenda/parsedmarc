@@ -1,6 +1,7 @@
+import errno
+import imaplib
 import logging
 import socket
-import errno
 
 from mailsuite.imap import IMAPClient
 
@@ -34,7 +35,7 @@ class ImapWrapper:
         if self.client:
             try:
                 self._test_connection()
-            except (BrokenPipeError, socket.error) as e:
+            except (BrokenPipeError, imaplib.IMAP4.abort) as e:
                 logger.debug('Exception caught (%s) %s', type(e), str(e))
                 logger.debug('Reconnecting...')
                 self.client = IMAPClient(self.host, self.username, self.password,
