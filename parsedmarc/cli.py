@@ -619,6 +619,7 @@ def _main():
             forensic_reports += reports["forensic_reports"]
 
         except Exception as error:
+            logger.debug("%s" % str(error))
             logger.error("IMAP Error: {0}".format(error.__str__()))
             exit(1)
 
