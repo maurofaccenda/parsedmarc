@@ -1156,14 +1156,6 @@ def get_dmarc_reports_from_inbox(connection=None,
                     try:
                         server.move_messages([msg_uid],
                                              forensic_reports_folder)
-                    except socket.error as e:
-                        server = ImapWrapper(host, user, password, port=port,
-                                             ssl=ssl, verify=verify,
-                                             timeout=timeout,
-                                             max_retries=max_retries,
-                                             initial_folder=reports_folder)
-                        server.move_messages([msg_uid],
-                                             forensic_reports_folder)
                     except Exception as e:
                         e = "Error moving message UID {0}: {1}".format(
                             msg_uid, e)
