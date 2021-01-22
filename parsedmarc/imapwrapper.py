@@ -32,17 +32,13 @@ class ImapWrapper:
         self._connect()
 
     def _connect(self):
-        logger.debug('_connect')
         if self.client:
             try:
-                self._test_connection()
+                self.client.noop()
             except (BrokenPipeError, imaplib.IMAP4.abort) as e:
-                logger.debug('Exception caught (%s) %s', type(e), str(e))
-                logger.debug('Starting reset_connection()')
+                logger.debug('Connection closed by server: (%s) %s', type(e), str(e))
                 self.client.reset_connection()
-                logger.debug('Finished reset_connection()')
         else:
-            logger.debug('Connecting...')
             self.client = IMAPClient(self.host, self.username, self.password,
                                      port=self.port,
                                      ssl=self.ssl,
@@ -50,42 +46,27 @@ class ImapWrapper:
                                      timeout=self.timeout,
                                      max_retries=self.max_retries,
                                      initial_folder=self.initial_folder)
-    def _test_connection(self):
-        logger.debug('_test_connection')
-        self.client.noop()
 
     def move_messages(self, msg_uids, folder_path, _attempt=1):
-        logger.debug('move_messages')
         self._connect()
-        try:
-            logger.debug('Starting move_messages()')
-            self.client.move_messages(msg_uids, folder_path, _attempt)
-            logger.debug('Finished move_messages()')
-        except Exception as e:
-            logger.debug('Exception caught when moving message: %s' % str(e))
-            raise e
+        self.client.move_messages(msg_uids, folder_path, _attempt)
 
     def create_folder(self, folder_path, _attempt=1):
-        logger.debug('create_folder')
         self._connect()
-        return self.client.create_folder(folder_path, _attempt)
+        self.client.create_folder(folder_path, _attempt)
 
     def search(self, criteria="ALL", charset=None):
-        logger.debug('search')
         self._connect()
         return self.client.search(criteria, charset)
 
     def fetch_message(self, msg_uid, parse=False, _attempt=1):
-        logger.debug('fetch_message')
         self._connect()
         return self.client.fetch_message(msg_uid, parse, _attempt)
 
-    def delete_messages(self, messages, silent=False):
-        logger.debug('delete_messages')
+    def delete_messages(self, msg_uids, silent=True, _attempt=1):
         self._connect()
-        return self.client.fetch_message(messages, silent)
+        self.client.delete_messages(msg_uids, silent, _attempt)
 
     def capabilities(self):
-        logger.debug('capabilities')
         self._connect()
         return self.client.capabilities()
